@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import {calculateEstimate,publicEstimate} from "../lib/estimate-calculator.ts";
+// Fictional testing profile; not the approved production rate card.
+process.env.FES_PRICING_JSON=JSON.stringify({hourlyRateCents:10000,firstPageHours:4,standardPageHours:1.5,densePageHours:3,reportHours:2,reviewHours:2,setupHours:1,revisionPercent:20});
+process.env.QUOTE_CAP_CAD="10000";
+const scope={study:"fes",projectName:"Synthetic facility",location:"Alberta",services:[],buses:null,scenarios:1,buildings:1,pidSheets:2,complexity:"standard",dataReady:true,rush:false,notes:"",confirmed:true};
+const normal=calculateEstimate(scope);assert.equal(normal.totalCents,126000);assert.equal(normal.route,"automatic");
+assert.equal(calculateEstimate({...scope,complexity:"dense"}).totalCents,144000);
+assert.equal(calculateEstimate({...scope,pidSheets:1}).totalCents,108000);
+for(const patch of [{buildings:null},{buildings:2},{pidSheets:null},{dataReady:false},{confirmed:false},{rush:true},{complexity:"unsure"},{scenarios:null},{scenarios:2},{notes:"Additional classification requested"}])assert.equal(calculateEstimate({...scope,...patch}).route,"sales_review");
+assert.equal(calculateEstimate(scope,normal.totalCents).route,"sales_review");assert.equal(calculateEstimate(scope,normal.totalCents+1).route,"automatic");
+assert.throws(()=>calculateEstimate({...scope,pidSheets:0}));assert.throws(()=>calculateEstimate({...scope,pidSheets:1.5}));assert.throws(()=>calculateEstimate({...scope,study:"power"}));
+const visible=publicEstimate(normal);assert(!/hour|rate|revisionPercent|unitCents|pricingVersion|capCents/i.test(JSON.stringify(visible)));
+delete process.env.FES_PRICING_JSON;assert.throws(()=>calculateEstimate(scope));
+console.log("PASS: fictional prices, strict limit, review rules, invalid quantities, FES-only scope, private browser response and missing-price configuration.");

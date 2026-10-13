@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.vercel/
+.local-data/
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+outputs/
+work/
+*.pem
+*.key
+*credentials*.json

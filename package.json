@@ -1,0 +1,35 @@
+{
+  "name": "fes-quote",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <27"
+  },
+  "scripts": {
+    "dev": "next dev --port 5173",
+    "build": "next build",
+    "start": "next start --port 5173",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types tests/quote-engine.test.mjs"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
+    "@google-cloud/storage": "^7.16.0",
+    "google-auth-library": "^10.0.0",
+    "@vercel/oidc": "^3.0.0",
+    "@pdf-lib/fontkit": "^1.1.1",
+    "lucide-react": "^1.31.0",
+    "next": "16.3.4",
+    "pdf-lib": "^1.17.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}
