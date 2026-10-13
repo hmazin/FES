@@ -11,7 +11,13 @@ export const bucket=()=>objects;
 
 export function response(data:unknown,status=200){return Response.json(data,{status,headers:{"Cache-Control":"no-store"}});}
 
-export function sameOrigin(request:Request){const origin=request.headers.get("origin");return !origin || origin===new URL(request.url).origin;}
+export function sameOrigin(request:Request){
+  const origin=request.headers.get("origin");if(!origin)return true;
+  const url=new URL(request.url),host=request.headers.get("host")||url.host;
+  // Next may use an internal hostname in request.url; Host identifies the site the visitor actually opened.
+  const protocol=process.env.VERCEL?"https:":url.protocol;
+  return origin===`${protocol}//${host}`;
+}
 
 export async function hash(value:string){const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,"0")).join("");}
 

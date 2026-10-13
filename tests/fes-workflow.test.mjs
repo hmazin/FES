@@ -8,7 +8,7 @@ document.addPage([792,612]).drawText('SYNTHETIC P&ID - TEST ONLY - PAGE 2');
 const original=await document.save();
 await mkdir('work',{recursive:true});await writeFile('work/synthetic-pid.pdf',original);
 async function intake(study='fes',name='synthetic-pid.pdf',bytes=original) {
-  const prepare=await fetch(origin+'/api/intake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({study,files:[{name,size:bytes.length}]})});
+  const prepare=await fetch(origin+'/api/intake',{method:'POST',headers:{'Content-Type':'application/json',origin},body:JSON.stringify({study,files:[{name,size:bytes.length}]})});
   if(!prepare.ok)return prepare;
   const cookie=prepare.headers.get('set-cookie').split(';')[0],data=await prepare.json();
   const target=data.uploads[0];assert.equal(target.method,'PUT_LOCAL','Integration verification expects the explicit local test store.');
@@ -20,7 +20,7 @@ assert.equal((await intake('power')).status,400);
 assert.equal((await intake('fes','wrong.txt')).status,400);
 const upload=await intake();assert.equal(upload.status,200,await upload.clone().text());
 const cookie=upload.headers.get('set-cookie').split(';')[0];const {id,files}=await upload.json();
-async function post(path,body,headers={}) {return fetch(origin+path,{method:'POST',headers:{'Content-Type':'application/json',cookie,...headers},body:JSON.stringify(body)});}
+async function post(path,body,headers={}) {return fetch(origin+path,{method:'POST',headers:{'Content-Type':'application/json',cookie,origin,...headers},body:JSON.stringify(body)});}
 const scope={study:'fes',projectName:'Synthetic FES verification',location:'Alberta',services:[],buses:null,scenarios:1,buildings:1,pidSheets:2,complexity:'standard',buildingLength:22,buildingWidth:16,buildingHeight:10.5,dimensionUnit:'ft',louverCount:2,pidFileHashes:[files[0].hash],buildingFileHashes:[],dataReady:true,rush:false,notes:'',confirmed:true};
 const analysis=await post('/api/analyze',{id,aiConsent:false});assert.equal(analysis.status,200);assert.equal((await analysis.json()).analysis.mode,'guided');
 assert.equal((await post('/api/estimate',{id,scope:{...scope,pidFileHashes:[]}})).status,400);
@@ -55,7 +55,8 @@ const reviewEstimate=await post('/api/estimate',{id:secondData.id,scope:reviewSc
 const reviewSaved=await post('/api/submit',{id:secondData.id,contact},{cookie:secondCookie});assert.equal(reviewSaved.status,200);assert.equal((await reviewSaved.json()).quoteAvailable,false);
 assert.equal((await fetch(origin+`/api/quote?id=${secondData.id}`,{headers:{cookie:secondCookie}})).status,404);
 const loginForm=new FormData();loginForm.set('username',process.env.FES_ADMIN_USER);loginForm.set('password',process.env.FES_ADMIN_PASSWORD);
-const login=await fetch(origin+'/api/admin/login',{method:'POST',body:loginForm,redirect:'manual'});assert.equal(login.status,303);const ownerCookie=login.headers.get('set-cookie').split(';')[0];
+const deniedLogin=await fetch(origin+'/api/admin/login',{method:'POST',headers:{origin:'https://untrusted.invalid','Content-Type':'application/json'},body:JSON.stringify({username:'invalid',password:'invalid'})});assert.equal(deniedLogin.status,403);
+const login=await fetch(origin+'/api/admin/login',{method:'POST',headers:{origin},body:loginForm,redirect:'manual'});assert.equal(login.status,303);const ownerCookie=login.headers.get('set-cookie').split(';')[0];
 const dashboard=await fetch(origin+'/dashboard',{headers:{cookie:ownerCookie}});assert.equal(dashboard.status,200);const dashboardText=await dashboard.text();assert(dashboardText.includes('Synthetic FES verification'));assert(dashboardText.includes('Drawings retained'));
 const ownerFile=await fetch(origin+`/api/review-file?id=${id}&index=0`,{headers:{cookie:ownerCookie}});assert.equal(ownerFile.status,200);assert.deepEqual(new Uint8Array(await ownerFile.arrayBuffer()),original);
 const denied=await fetch(origin+'/dashboard',{redirect:'manual'});assert.equal(denied.status,307);assert(denied.headers.get('location').endsWith('/dashboard/login'));
