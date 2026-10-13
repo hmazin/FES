@@ -55,7 +55,9 @@ Use an ignored .env.local with FES_LOCAL_STORAGE=1, the private pricing profile,
 
 The local store exists only for development/testing and is always disabled when VERCEL is set. Its data and credentials are ignored and explicitly excluded from the traced deployment bundle.
 
-Unit tests use a fictional pricing fixture. Integration checks cover the upload flow, drawing basis, actual quote PDF, exact embedded original bytes, frozen quotes, review-only scopes, cross-session isolation, dashboard login and original-drawing retrieval. Synthetic test records are retained locally and are not uploaded to Google Cloud or GitHub.
+Unit tests use a fictional pricing fixture. Local integration checks cover the upload flow, drawing basis, actual quote PDF, exact embedded original bytes, frozen quotes, review-only scopes, cross-session isolation, dashboard login and original-drawing retrieval. These local records are excluded from Google Cloud and GitHub.
+
+A separate live production check retained one clearly named synthetic cloud-verification PDF in the private FES bucket. It verified signed browser uploads, the saved Firestore request, the retained original's exact SHA-256 fingerprint, and denial of anonymous object access. No real client drawing or email was used. Live pricing and owner sign-in still require the four owner-managed production secrets above.
 
 The pinned Google authentication library matches the installed Firestore REST client's plain-object header contract. The authentication regression check prevents an incompatible Headers return type from silently removing authorization. Deployment tracing checks retain framework startup files and native Google package metadata while excluding private local data.
 
