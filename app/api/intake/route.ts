@@ -16,6 +16,7 @@ export async function POST(request:Request){
 
   if(Number(request.headers.get("content-length")??0)>16000)return response({error:"Upload metadata is too large."},413);
 
+  let phase="validation";
   try{
 
     const input=Intake.parse(await request.json());
@@ -28,18 +29,26 @@ export async function POST(request:Request){
 
     if(!session){secret=sessionToken();session=await hash(secret);}
 
+    phase="database";
     if(!await requestStore.reserve(session))return response({error:"You have reached today’s quote request limit. Please try again tomorrow."},429);
 
     const id=crypto.randomUUID(),files:Uploaded[]=input.files.map(file=>{const extension=file.name.split(".").pop()!.toLowerCase();return {name:file.name.replace(/[\x00-\x1f]/g,"").slice(0,200),size:file.size,type:formats[extension],key:`requests/${id}/uploads/${crypto.randomUUID()}.${extension}`,hash:"",aiReadable:true};});
 
     const uploads=[];
 
+    phase="upload policy";
     for(const [index,file] of files.entries())uploads.push(localStorageEnabled()?{url:`/api/upload-local?id=${id}&index=${index}`,method:"PUT_LOCAL",fields:{}}:{...await bucket().uploadPolicy(file.key,file.type,file.size),method:"POST"});
 
+    phase="save request";
     await requestStore.create({id,session_hash:session,created_at:Date.now(),status:"uploading",study:"fes",files_json:JSON.stringify(files)});
 
     const result=response({id,uploads});if(secret)sessionCookie(result,secret,request);return result;
 
-  }catch(error){return response({error:error instanceof Error&&error.name==="ZodError"?"Use 1–6 PDF or image drawings, up to 10 MB each.":"Drawing storage is not ready. Please contact Power-Link or try again later."},400);}
+  }catch(error){
+    if(error instanceof Error&&error.name==="ZodError")return response({error:"Use 1–6 PDF or image drawings, up to 10 MB each."},400);
+    // Log only the failure stage and message, never request bodies, cookies or signed upload fields.
+    console.error("FES intake failed",{phase,message:error instanceof Error?error.message.slice(0,500):"Unknown cloud failure"});
+    return response({error:"Drawing storage is not ready. Please contact Power-Link or try again later."},503);
+  }
 
 }
