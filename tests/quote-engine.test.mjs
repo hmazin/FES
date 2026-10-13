@@ -13,6 +13,7 @@ const unknownGeometry=calculateEstimate({...scope,buildingHeight:null});assert.e
 assert.equal(calculateEstimate(scope,normal.totalCents).route,"sales_review");assert.equal(calculateEstimate(scope,normal.totalCents+1).route,"automatic");
 assert.throws(()=>calculateEstimate({...scope,pidSheets:0}));assert.throws(()=>calculateEstimate({...scope,pidSheets:1.5}));assert.throws(()=>calculateEstimate({...scope,study:"power"}));
 const visible=publicEstimate(normal);assert(!/hour|rate|revisionPercent|unitCents|pricingVersion|capCents/i.test(JSON.stringify(visible)));
+const allowances=publicEstimate(calculateEstimate({...scope,notes:'Estimate basis: Page count subject to confirmation.'}));assert(allowances.reasons.some(reason=>reason.includes('preliminary allowances')),'Visible estimate assumptions must not be masked by the private-rate filter.');assert(!/hourlyRate|unitCents|revisionPercent|pricingVersion|capCents/.test(JSON.stringify(allowances)));
 delete process.env.FES_PRICING_JSON;assert.throws(()=>calculateEstimate(scope),PricingConfigurationError);
 for(const invalid of ['{invalid JSON}','{"hourlyRateCents":"invalid"}']){process.env.FES_PRICING_JSON=invalid;assert.throws(()=>fesPricing(),PricingConfigurationError);}
 for(const invalid of ['', 'not a number', '0']){process.env.QUOTE_CAP_CAD=invalid;assert.throws(()=>automaticCapCents(),PricingConfigurationError);}

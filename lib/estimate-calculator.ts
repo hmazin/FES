@@ -97,6 +97,6 @@ export function calculateEstimate(input: unknown, capCents = automaticCapCents()
 
 export function publicEstimate(value:InternalEstimate):Estimate {
 
-  return {totalCents:value.totalCents,currency:"CAD",route:value.route,reasons:value.reasons.map(reason=>/hour|allowance|formula|\d+%/i.test(reason) ? "This scope needs PLT review." : reason.includes("automatic quote limit") ? "This project needs a sales quotation." : reason),sample:true,excludes:value.excludes,inclusions:value.inclusions ?? ["Engineering study within the confirmed scope"]};
+  return {totalCents:value.totalCents,currency:"CAD",route:value.route,reasons:value.reasons.map(reason=>/hour|revision allowance|formula|\d+%/i.test(reason) ? "This scope needs PLT review." : reason.includes("automatic quote limit") ? "This project needs a sales quotation." : reason),sample:true,excludes:value.excludes,inclusions:value.inclusions ?? ["Engineering study within the confirmed scope"]};
 
 }
