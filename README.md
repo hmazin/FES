@@ -38,7 +38,9 @@ The GitHub repository is connected to Vercel project fes, with production addres
 
 Google Cloud project fes-quote now has a Firestore Native default database in northamerica-northeast2 (Toronto), with database deletion protection enabled. Dedicated service account fes-web and workload identity pool fes-vercel/provider vercel are configured. The provider accepts only production tokens from the owner's specific FES project and team IDs; previews cannot access production customer data.
 
-Drawing-bucket creation remains pending billing setup. Linking the selected My Billing Account failed with Google's Cloud billing quota exceeded error. The owner chose to enter the prepared login credentials and production pricing into Vercel personally; these values remain in ignored local storage and have not been uploaded. Redeploy after the owner saves them as sensitive production variables. No unrelated Google Cloud project has been modified.
+FES-Quote is linked to the owner's selected My Billing Account. The private drawing/PDF bucket is fes-quote-drawings-1020797989683, also in Toronto, with uniform bucket access and public access prevention. The website identity can create and read objects, with no object deletion role. No automatic object-deletion lifecycle is configured. Browser upload access is restricted to this FES website's three production addresses.
+
+The owner chose to enter the prepared login credentials and production pricing into Vercel personally; these values remain in ignored local storage and have not been uploaded. Add FES_ADMIN_USER, FES_ADMIN_PASSWORD, FES_PRICING_JSON and QUOTE_CAP_CAD as Production Secret variables, then redeploy. All Google Cloud connection settings are already configured for production.
 
 ## Local verification
 
