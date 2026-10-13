@@ -9,6 +9,7 @@ import { z } from "zod";
 import { capCents, ownRequest, response, sameOrigin, type Uploaded } from "@/lib/server";
 
 import { validateQuoteBasis } from "@/lib/quote-basis";
+import { PricingConfigurationError } from "@/lib/pricing-config";
 
 export async function POST(request: Request) {
 
@@ -28,14 +29,26 @@ export async function POST(request: Request) {
 
     try{validateQuoteBasis(scope,JSON.parse(String(row.files_json)) as Uploaded[]);}catch(error){return response({error:error instanceof Error ? error.message : "Confirm the source drawings."},400);}
 
+    const scopeJson=JSON.stringify(scope);
+    // Retain confirmed project details even when the private price settings are temporarily unavailable.
+    if(!await requestStore.patch(body.id,{scope_json:scopeJson,estimate_json:null},{status:"draft"}))return response({error:"This quote changed while calculating. Please try again."},409);
+
     const estimate=calculateEstimate(scope,capCents());
 
-    const updated=await requestStore.patch(body.id,{scope_json:JSON.stringify(scope),estimate_json:JSON.stringify(estimate)},{status:"draft"});
+    const updated=await requestStore.patch(body.id,{estimate_json:JSON.stringify(estimate)},{status:"draft",scope_json:scopeJson});
 
     if(!updated)return response({error:"This quote changed while calculating. Please try again."},409);
 
     return response({estimate:publicEstimate(estimate)});
 
-  } catch(error) { return response({error:error instanceof Error && error.name==="ZodError" ? "Please check the project name, location, study selections, and quantities." : "We couldn’t calculate the estimate. Please try again."},400); }
+  } catch(error) {
+    if(error instanceof PricingConfigurationError){
+      console.error("FES estimate unavailable: private pricing configuration is missing or invalid.");
+      return response({code:"QUOTE_UNAVAILABLE",error:"Instant quoting is temporarily unavailable. Your drawings and project details are saved. Please contact Power-Link for a quotation."},503);
+    }
+    if(error instanceof Error&&error.name==="ZodError")return response({error:"Please check the project name, location, study selections, and quantities."},400);
+    console.error("FES estimate failed unexpectedly.");
+    return response({error:"We couldn’t calculate your quotation. Your drawings are retained. Please contact Power-Link for assistance."},503);
+  }
 
 }

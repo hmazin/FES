@@ -42,6 +42,8 @@ FES-Quote is linked to the owner's selected My Billing Account. The private draw
 
 The owner chose to enter the prepared login credentials and production pricing into Vercel personally; these values remain in ignored local storage and have not been uploaded. Add FES_ADMIN_USER, FES_ADMIN_PASSWORD, FES_PRICING_JSON and QUOTE_CAP_CAD as Production Secret variables, then redeploy. All Google Cloud connection settings are already configured for production.
 
+If private pricing is missing or invalid, estimation returns a clear service-unavailable response rather than asking the visitor to retry an invalid project. Confirmed scope and retained drawings remain saved; no price or PDF quotation is fabricated. After the owner configures pricing and redeploys, the visitor can calculate again using the retained inputs.
+
 ## Local verification
 
 Use an ignored .env.local with FES_LOCAL_STORAGE=1, the private pricing profile, an automatic quote limit and test owner credentials. Run npm run dev, then:

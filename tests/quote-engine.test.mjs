@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {calculateEstimate,publicEstimate} from "../lib/estimate-calculator.ts";
+import {PricingConfigurationError,fesPricing,automaticCapCents} from "../lib/pricing-config.ts";
 // Fictional testing profile; not the approved production rate card.
 process.env.FES_PRICING_JSON=JSON.stringify({hourlyRateCents:10000,firstPageHours:4,standardPageHours:1.5,densePageHours:3,reportHours:2,reviewHours:2,setupHours:1,revisionPercent:20});
 process.env.QUOTE_CAP_CAD="10000";
@@ -11,5 +12,7 @@ for(const patch of [{buildings:null},{buildings:2},{pidSheets:null},{dataReady:f
 assert.equal(calculateEstimate(scope,normal.totalCents).route,"sales_review");assert.equal(calculateEstimate(scope,normal.totalCents+1).route,"automatic");
 assert.throws(()=>calculateEstimate({...scope,pidSheets:0}));assert.throws(()=>calculateEstimate({...scope,pidSheets:1.5}));assert.throws(()=>calculateEstimate({...scope,study:"power"}));
 const visible=publicEstimate(normal);assert(!/hour|rate|revisionPercent|unitCents|pricingVersion|capCents/i.test(JSON.stringify(visible)));
-delete process.env.FES_PRICING_JSON;assert.throws(()=>calculateEstimate(scope));
+delete process.env.FES_PRICING_JSON;assert.throws(()=>calculateEstimate(scope),PricingConfigurationError);
+for(const invalid of ['{invalid JSON}','{"hourlyRateCents":"invalid"}']){process.env.FES_PRICING_JSON=invalid;assert.throws(()=>fesPricing(),PricingConfigurationError);}
+for(const invalid of ['', 'not a number', '0']){process.env.QUOTE_CAP_CAD=invalid;assert.throws(()=>automaticCapCents(),PricingConfigurationError);}
 console.log("PASS: fictional prices, strict limit, review rules, invalid quantities, FES-only scope, private browser response and missing-price configuration.");
