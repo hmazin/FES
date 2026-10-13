@@ -144,9 +144,14 @@ export default function FesAssistant(){
     if(documentIndex<drawings.length-1){setDocumentIndex(documentIndex+1);return;}
     if(!updated.pidFileHashes.length){setError("We still need a process drawing to estimate the study. Add the P&ID when you have it, or contact Power-Link for help finding the right drawing.");return;}
     const newPid=updated.pidFileHashes.some(hash=>!pidsBeforeUpload.current.includes(hash));
-    const next=adding&&updated.pidSheets!==null&&!newPid?"building-basis":"pages";
-    returnAfterPages.current=adding&&scope.pidSheets!==null&&next==="pages"?"building-basis":null;
-    setAdding(false);persist(updated,next);go(next);
+    const buildingReady=adding&&updated.buildingFileHashes.length>0;
+    if(buildingReady)updated.notes=updated.notes.split("\n").filter(line=>!line.startsWith("Estimate basis: Building dimensions")).join("\n");
+    const buildingNext:GuideStage=buildingReady?"ventilation":"building-basis";
+    const next=adding&&updated.pidSheets!==null&&!newPid?buildingNext:"pages";
+    returnAfterPages.current=adding&&scope.pidSheets!==null&&next==="pages"?buildingNext:null;
+    const destination=editing&&next==="ventilation"?"summary":next;
+    if(destination==="summary")setEditing(false);
+    setAdding(false);persist(updated,destination);go(destination);
   }
   function choosePageCount(count:number,allowance=false){
     if(count>1000){setError("This package is larger than the instant estimator supports. Select the P&ID pages for one building, or contact Power-Link with your reference for the complete scope.");return;}
