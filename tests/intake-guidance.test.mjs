@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {PDFDocument} from 'pdf-lib';
 import {drawingPageCount} from '../lib/drawing-pages.ts';
-import {countedPages,initialScope,readDimensions,readQuantity,resumeStage} from '../lib/intake-guidance.ts';
+import {addAllowance,countedPages,initialScope,readDimensions,readQuantity,resumeStage} from '../lib/intake-guidance.ts';
 
 assert.equal(readQuantity('two pages',1000),2);
 assert.equal(readQuantity('1 building',100),1);
@@ -21,4 +21,5 @@ assert.equal(resumeStage({...scope,pidSheets:null},true),'pages','Old requests w
 assert.equal(resumeStage({...scope,buildings:null},true),'buildings');
 assert.equal(resumeStage({...scope,scenarios:null},true),'ventilation');
 assert.equal(resumeStage(scope,true),'estimate');
+const revisedAllowance=addAllowance('Estimate basis: Use 2 P&ID pages as a preliminary allowance.\nEstimate basis: Building dimensions to be confirmed.','Use 3 P&ID pages as a preliminary allowance.');assert(!revisedAllowance.includes('Use 2 P&ID'));assert(revisedAllowance.includes('Use 3 P&ID'));assert(revisedAllowance.includes('Building dimensions'),'Changing one allowance preserves the other project answers.');
 console.log('PASS: physical PDF page counts, duplicate exclusion, natural quantity/dimension answers and guided recovery of incomplete legacy estimates.');

@@ -25,7 +25,11 @@ export function countedPages(files:DrawingSource[],scope:Scope){
   const known=selected.reduce((sum,file)=>sum+(file.pageCount??0),0);
   return {count:known+unknown,exact:unknown===0,mixed:selected.some(file=>scope.buildingFileHashes.includes(file.hash))};
 }
-export function addAllowance(notes:string,text:string){const line=`Estimate basis: ${text}`;return notes.split("\n").includes(line)?notes:[notes,line].filter(Boolean).join("\n").slice(0,3000);}
+export function addAllowance(notes:string,text:string){
+  const topic=[/P&ID pages/,/study boundary/,/Building dimensions/,/drawing (?:effort|density)/,/ventilation arrangement/].find(pattern=>pattern.test(text));
+  const existing=notes.split("\n").filter(line=>line&&!(line.startsWith("Estimate basis: ")&&topic?.test(line)));
+  return [...existing,`Estimate basis: ${text}`].join("\n").slice(0,3000);
+}
 export function resumeStage(scope:Scope,hasEstimate:boolean):GuideStage{
   if(!scope.pidFileHashes.length)return "documents";
   if(scope.pidSheets===null)return "pages";
