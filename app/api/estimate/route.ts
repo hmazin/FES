@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     if(scope.study!==row.study) return response({error:"The selected study type does not match your upload."},400);
 
-    try{validateQuoteBasis(scope,JSON.parse(String(row.files_json)) as Uploaded[]);}catch(error){return response({error:error instanceof Error ? error.message : "Confirm the source drawings."},400);}
+    try{validateQuoteBasis(scope,JSON.parse(String(row.files_json)) as Uploaded[],true);}catch(error){return response({error:error instanceof Error ? error.message : "Confirm the source drawings."},400);}
 
     const scopeJson=JSON.stringify(scope);
     // Retain confirmed project details even when the private price settings are temporarily unavailable.

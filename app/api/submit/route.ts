@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
     const files=JSON.parse(String(row.files_json)) as Uploaded[];
 
-    validateQuoteBasis(scope,files);
+    validateQuoteBasis(scope,files,true);
 
     if(!scope.confirmed) return response({error:"Confirm the current scope and calculate the estimate before requesting a quote."},409);
 
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     if(stored.totalCents!==fresh.totalCents || stored.pricingVersion!==fresh.pricingVersion) return response({error:"Please calculate a new estimate for the current scope."},409);
 
     const eligible=canIssueQuote(scope,fresh);
+    if(eligible)validateQuoteBasis(scope,files);
 
     let contact:QuoteContact=body.contact;
 

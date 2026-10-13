@@ -12,7 +12,7 @@ const DraftSchema=ScopeSchema.innerType().extend({
 
   projectName:z.string().trim().max(140),location:z.string().trim().max(140),confirmed:z.literal(false),
 
-  chatStage:z.enum(["documents","name","location","services","buses","scenarios","buildings","pages","density","dimensions","readiness","summary"])
+  chatStage:z.enum(["documents","name","location","services","buses","scenarios","buildings","pages","density","dimensions","readiness","summary","building-basis","ventilation","requirements"])
 
 });
 

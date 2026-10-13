@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {PDFDocument} from 'pdf-lib';
+import {drawingPageCount} from '../lib/drawing-pages.ts';
+import {countedPages,initialScope,readDimensions,readQuantity,resumeStage} from '../lib/intake-guidance.ts';
+
+assert.equal(readQuantity('two pages',1000),2);
+assert.equal(readQuantity('1 building',100),1);
+for(const text of ['', '0', '1.5', '-2', 'not sure', '1001 pages'])assert.equal(readQuantity(text,1000),null);
+assert.deepEqual(readDimensions('30 x 20 x 12 ft','m'),{buildingLength:30,buildingWidth:20,buildingHeight:12,dimensionUnit:'ft'});
+assert.deepEqual(readDimensions('9 by 6 by 3.5 metres','ft'),{buildingLength:9,buildingWidth:6,buildingHeight:3.5,dimensionUnit:'m'});
+for(const text of ['30 x 20','0 x 2 x 3','30 x 20 x 12 inches','30 x ? x 12'])assert.equal(readDimensions(text,'ft'),null);
+const document=await PDFDocument.create();document.addPage();document.addPage();document.addPage();
+assert.equal(await drawingPageCount(await document.save(),'application/pdf'),3);
+assert.equal(await drawingPageCount(new TextEncoder().encode('%PDF-invalid'),'application/pdf'),null);
+assert.equal(await drawingPageCount(new Uint8Array(),'image/png'),1);
+const files=[{name:'process.pdf',hash:'a',pageCount:3},{name:'duplicate.pdf',hash:'a',pageCount:3},{name:'building.pdf',hash:'b',pageCount:2}];
+const scope={...initialScope,pidFileHashes:['a'],buildingFileHashes:['b'],pidSheets:3};
+assert.deepEqual(countedPages(files,scope),{count:3,exact:true,mixed:false});
+assert.deepEqual(countedPages(files,{...scope,buildingFileHashes:['a','b']}),{count:3,exact:true,mixed:true});
+assert.equal(resumeStage({...scope,pidSheets:null},true),'pages','Old requests with an unknown quantity must return to guidance, not an empty price card.');
+assert.equal(resumeStage({...scope,buildings:null},true),'buildings');
+assert.equal(resumeStage({...scope,scenarios:null},true),'ventilation');
+assert.equal(resumeStage(scope,true),'estimate');
+console.log('PASS: physical PDF page counts, duplicate exclusion, natural quantity/dimension answers and guided recovery of incomplete legacy estimates.');

@@ -65,13 +65,17 @@ export function calculateEstimate(input: unknown, capCents = automaticCapCents()
 
   }
 
-  if(s.study === "fes" && s.notes.trim()) reasons.push("Additional project notes or requirements need an engineer’s scope review.");
+  if(s.notes.split("\n").some(line=>line.startsWith("Estimate basis: ")))reasons.push("The preliminary allowances listed in your scope will be confirmed with Power-Link.");
+  if(s.notes.split("\n").some(line=>line.trim()&&!line.startsWith("Estimate basis: ")))reasons.push("Your additional requirements will be confirmed with Power-Link.");
 
   if(s.rush) reasons.push("Expedited delivery needs availability confirmation.");
 
-  if(s.complexity === "complex" || s.complexity === "unsure") reasons.push("Project complexity needs an engineer’s review.");
+  if(s.complexity === "complex") reasons.push("The special process scope needs an engineer’s review.");
+  if(s.complexity === "unsure") reasons.push("Drawing density will be confirmed before the official quotation.");
 
-  if(!s.dataReady) reasons.push("Required source information is incomplete.");
+  const buildingBasis=!!(s.buildingFileHashes.length||(s.buildingLength&&s.buildingWidth&&s.buildingHeight));
+  if(!s.dataReady&&buildingBasis)reasons.push("The remaining source details will be confirmed with Power-Link.");
+  if(!buildingBasis)reasons.push("Building dimensions will be confirmed before the official quotation.");
 
   if(!s.confirmed) reasons.push("The client has not confirmed the scope.");
 

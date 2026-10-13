@@ -4,6 +4,10 @@ Dedicated Power-Link fugitive emission website for Vercel, linked to the hmazin/
 
 ## What works
 
+- FES-only guided conversation adapted from the earlier mixed-study assistant: one active question, quick replies, contextual help, visible answer history and an editable scope summary.
+- Physical PDF page counting without AI, exact-file duplicate exclusion, optional page selection, and explicit page allowances for mixed or unreadable packages. Physical page count is not represented as automatic P&ID content classification.
+- “I don’t know yet” paths keep clients moving with visible preliminary assumptions. Missing building geometry can receive a preliminary price and a dashboard follow-up record; it always requires confirmation and cannot issue an official PDF quotation.
+- Clients can add a building drawing to the same draft without losing their original P&IDs or earlier answers. Existing requests with unknown quantities return to the relevant guided question.
 - P&ID and building drawing uploads, up to six files, 10 MB each and 20 MB total.
 - Direct signed uploads to a private Google Cloud Storage bucket. Drawing bytes do not pass through Vercel request bodies, avoiding its function payload limit.
 - Upload validation, SHA-256 fingerprints and a separate retained-source key. A still-valid upload policy cannot change the source already accepted for a quote.
@@ -51,6 +55,7 @@ Use an ignored .env.local with FES_LOCAL_STORAGE=1, the private pricing profile,
 
 - npm run typecheck
 - npm test
+- node --experimental-strip-types tests/intake-guidance.test.mjs
 - node --env-file=.env.local tests/fes-workflow.test.mjs
 - npm run build
 - node tests/deployment-trace.test.mjs
@@ -59,6 +64,7 @@ Use an ignored .env.local with FES_LOCAL_STORAGE=1, the private pricing profile,
 The local store exists only for development/testing and is always disabled when VERCEL is set. Its data and credentials are ignored and explicitly excluded from the traced deployment bundle.
 
 Unit tests use a fictional pricing fixture. Local integration checks cover the upload flow, drawing basis, actual quote PDF, exact embedded original bytes, frozen quotes, review-only scopes, cross-session isolation, dashboard login and original-drawing retrieval. These local records are excluded from Google Cloud and GitHub.
+Guidance checks cover physical page counts, duplicate exclusion, natural quantity/dimension input and recovery of incomplete earlier estimates. Integration checks also cover drawing additions, preserved progress and preliminary estimates with unknown building geometry.
 
 A separate live production check retained one clearly named synthetic cloud-verification PDF in the private FES bucket. It verified signed browser uploads, the saved Firestore request, the retained original's exact SHA-256 fingerprint, and denial of anonymous object access. No real client drawing or email was used.
 

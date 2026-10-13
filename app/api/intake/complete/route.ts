@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {bucket,ownRequest,response,sameOrigin,type Uploaded} from "@/lib/server";
 import {requestStore} from "@/lib/request-store";
+import {drawingPageCount} from "@/lib/drawing-pages";
 export const runtime="nodejs";
 export const maxDuration=120;
 export async function POST(request:Request){
@@ -12,6 +13,7 @@ export async function POST(request:Request){
     if(row.status!=="uploading")return response({error:"This request is already finalized."},409);
     const verified:Uploaded[]=[];
     for(const file of JSON.parse(row.files_json) as Uploaded[]){
+      if(file.hash&&file.key.includes("/originals/")){verified.push(file);continue;}
       const metadata=await bucket().head(file.key);
       if(!metadata||metadata.size!==file.size||metadata.size>10*1024*1024)return response({error:`The upload for ${file.name} is incomplete. Please retry the drawing upload.`},400);
       const object=await bucket().get(file.key);if(!object)throw new Error("Drawing unavailable.");
@@ -22,7 +24,8 @@ export async function POST(request:Request){
       // Signed upload policies can still be valid after confirmation. Keep the accepted source under a different key.
       const retainedKey=file.key.replace("/uploads/","/originals/");
       await bucket().put(retainedKey,bytes,{httpMetadata:{contentType:file.type}});
-      verified.push({...file,key:retainedKey,hash:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")});
+      const pageCount=await drawingPageCount(bytes,file.type);
+      verified.push({...file,key:retainedKey,pageCount,aiReadable:file.type!=="application/pdf"||pageCount!==null,hash:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")});
     }
     const updated=await requestStore.patch(id,{status:"draft",files_json:JSON.stringify(verified)},{status:"uploading"});
     if(!updated)return response({error:"The upload changed while being finalized. Please retry."},409);

@@ -2,12 +2,12 @@ import {ArrowRight,ArrowUpRight,Phone} from "lucide-react";
 import {type Estimate,money} from "@/lib/quote-engine";
 import "./estimate-summary.css";
 
-export default function EstimateSummary({estimate,reference,incomplete,onStartAgain}:{estimate:Estimate;reference:string;incomplete:boolean;onStartAgain:()=>void}){
+export default function EstimateSummary({estimate,reference,incomplete,basisLabel,onStartAgain}:{estimate:Estimate;reference:string;incomplete:boolean;basisLabel?:string;onStartAgain:()=>void}){
   const contactUrl=`mailto:info@powerlinktec.com?subject=${encodeURIComponent(`Fugitive emission study quotation - Reference ${reference}`)}`;
   return <section className="estimate-summary" aria-label="Study estimate and reference">
     <div className={`price-card ${estimate.route!=="automatic"?"review-price":""}`}>
       <div>
-        <span>YOUR STUDY ESTIMATE</span>
+        <span>{basisLabel??"YOUR STUDY ESTIMATE"}</span>
         <strong>{incomplete?"Let’s confirm your scope":money(estimate.totalCents)}</strong>
         <p>{incomplete?"Contact us to confirm the scope and price.":"CAD · before applicable taxes · preliminary estimate"}</p>
         <p className="estimate-reference">Reference: <b>{reference}</b></p>

@@ -30,6 +30,6 @@ export async function ownRequest(request:Request,id:string){if(!/^[a-f0-9-]{36}$
 export const capCents=automaticCapCents;
 export const reviewer=(request:Request)=>isReviewer(request.headers);
 
-export type Uploaded={name:string;key:string;size:number;type:string;hash:string;aiReadable:boolean};
+export type Uploaded={name:string;key:string;size:number;type:string;hash:string;aiReadable:boolean;pageCount?:number|null};
 
 export function sessionCookie(result:Response,secret:string,request:Request){result.headers.set("Set-Cookie",`plt_request_session=${secret}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800${new URL(request.url).protocol==="https:"?"; Secure":""}`);}
