@@ -1,0 +1,6 @@
+"use client";
+import {useState} from "react";
+export default function DashboardLogin({initialError=false}:{initialError?:boolean}){
+  const [busy,setBusy]=useState(false),[error,setError]=useState(initialError?"The login details were not recognized.":"");
+  return <form onSubmit={async event=>{event.preventDefault();setBusy(true);setError("");const form=new FormData(event.currentTarget);try{const result=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:form.get("username"),password:form.get("password")})});const data=await result.json() as {error?:string};if(!result.ok)throw new Error(data.error||"Login failed.");window.location.assign("/dashboard");}catch(e){setError(e instanceof Error?e.message:"Login failed. Please try again.");setBusy(false);}}}><label>Username<input name="username" autoComplete="username" required disabled={busy}/></label><label>Password<input name="password" type="password" autoComplete="current-password" required disabled={busy}/></label>{error&&<p className="error-note" role="alert">{error}</p>}<button className="btn blue" type="submit" disabled={busy}>{busy?"Logging in…":"Log in to dashboard"}</button></form>;
+}
