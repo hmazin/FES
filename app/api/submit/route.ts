@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 
   } catch(error) {
 
-    const message=error instanceof Error && error.name==="ZodError" ? "Enter your name and a valid email, and confirm that PLT may contact you." : error instanceof Error && /source|drawing|scope|building|P&ID/i.test(error.message) ? error.message : "We couldn’t finish preparing your quote. Your request is retained; please try again.";
+    const message=error instanceof Error && error.name==="ZodError" ? "Enter your name and a valid email, and confirm that PLT may contact you." : error instanceof Error && /source|drawing|scope|building|P&ID/i.test(error.message) ? error.message : "We couldn’t submit your request. Please try again.";
 
     return response({error:message},400);
 

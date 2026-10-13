@@ -26,6 +26,6 @@ export async function POST(request: Request) {
 
     return response({analysis});
 
-  } catch { return response({analysis:{mode:"guided",summary:"Automatic reading is unavailable. Your documents are saved, and you can confirm the scope or request an engineer’s review.",evidence:[],missing:[]}}); }
+  } catch { return response({analysis:{mode:"guided",summary:"Automatic reading is unavailable. Please confirm the project details to calculate your estimate.",evidence:[],missing:[]}}); }
 
 }

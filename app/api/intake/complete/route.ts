@@ -27,5 +27,5 @@ export async function POST(request:Request){
     const updated=await requestStore.patch(id,{status:"draft",files_json:JSON.stringify(verified)},{status:"uploading"});
     if(!updated)return response({error:"The upload changed while being finalized. Please retry."},409);
     return response({id,files:verified.map(({key,...file})=>file)});
-  }catch{return response({error:"We couldn’t verify your drawings. Your upload record is retained; please try again."},503);}
+  }catch{return response({error:"We couldn’t verify your drawings. Please try again."},503);}
 }

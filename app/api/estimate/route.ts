@@ -44,11 +44,11 @@ export async function POST(request: Request) {
   } catch(error) {
     if(error instanceof PricingConfigurationError){
       console.error("FES estimate unavailable: private pricing configuration is missing or invalid.");
-      return response({code:"QUOTE_UNAVAILABLE",error:"Instant quoting is temporarily unavailable. Your drawings and project details are saved. Please contact Power-Link for a quotation."},503);
+      return response({code:"QUOTE_UNAVAILABLE",error:"Instant quoting is temporarily unavailable. Please contact Power-Link for a quotation."},503);
     }
     if(error instanceof Error&&error.name==="ZodError")return response({error:"Please check the project name, location, study selections, and quantities."},400);
     console.error("FES estimate failed unexpectedly.");
-    return response({error:"We couldn’t calculate your quotation. Your drawings are retained. Please contact Power-Link for assistance."},503);
+    return response({error:"We couldn’t calculate your quotation. Please contact Power-Link for assistance."},503);
   }
 
 }
