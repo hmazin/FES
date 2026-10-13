@@ -1,4 +1,4 @@
-import { Storage, type StorageOptions } from "@google-cloud/storage";
+import { Storage } from "@google-cloud/storage";
 import { Firestore } from "@google-cloud/firestore";
 import { GoogleAuth, ExternalAccountClient } from "google-auth-library";
 import { getVercelOidcToken } from "@vercel/oidc";
@@ -26,7 +26,6 @@ export function firestore() {
 }
 export function cloudBucket() {
   if (!process.env.GCP_STORAGE_BUCKET) throw new Error("Drawing storage is not configured.");
-  // Storage and Firestore may bundle different GoogleAuth minor versions; both consume the same public auth interface.
-  storage ??= new Storage({projectId:process.env.GCP_PROJECT_ID,authClient:cloudAuth() as unknown as StorageOptions["authClient"]});
+  storage ??= new Storage({projectId:process.env.GCP_PROJECT_ID,authClient:cloudAuth()});
   return storage.bucket(process.env.GCP_STORAGE_BUCKET);
 }
